@@ -48,7 +48,7 @@ from utils import load_image_into_numpy_array
 # You can load .h5 model or any model below this line
 
 # If you use h5 type uncomment line below
-# model = tf.keras.models.load_model('./my_model.h5')
+model = tf.keras.models.load_model('./chicken_disease.h5')
 # If you use saved model type uncomment line below
 # model = tf.saved_model.load("./my_model_folder")
 
@@ -101,15 +101,25 @@ def predict_image(uploaded_file: UploadFile, response: Response):
         print("Image shape:", image.shape)
         
         # Step 1: (Optional, but you should have one) Do your image preprocessing
-        
+        for IMG_PATH in uploaded.keys():
+            image: Image.Image = tf.keras.utils.load_img(path=IMG_PATH, 
+                                                        target_size=(IMG_SIZE, IMG_SIZE))
+            input_arr: np.ndarray = tf.keras.utils.img_to_array(img=image)
+
         # Step 2: Prepare your data to your model
-        
+            input_arr: np.ndarray = np.array(object=[input_arr])
+
         # Step 3: Predict the data
-        # result = model.predict(...)
-        
+            predictions: np.ndarray = model.predict(x=input_arr, verbose="0")
+            predicted_index: np.int64 = np.argmax(a=predictions)
+            
+            predicted_name: str = class_names[predicted_index]
+            percentage: float = round(predictions[0][predicted_index]*100, 2)
+
         # Step 4: Change the result your determined API output
         
-        return "Endpoint not implemented"
+        return predicted_name
+    
     except Exception as e:
         traceback.print_exc()
         response.status_code = 500
